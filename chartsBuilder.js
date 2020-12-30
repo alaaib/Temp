@@ -6,15 +6,48 @@ Chart.plugins.register({
     }
 });
 
-const buildDataSets = (data) => {
+function getAllIndexes(arr, val) {
+    var indexes = [], i = -1;
+    for (let i = 0; i < arr.length; i++)
+        if (val.indexOf(arr[i].toLowerCase()) != -1)
+            indexes.push(i);
+
+    return indexes;
+}
+
+
+const getAxisesTypesIndexs = (types) => {
+    const colTypesIndexs = {}
+    colTypesIndexs.numbers = getAllIndexes(types, ["int32", "int64", "decimal"])
+    colTypesIndexs.timespans = getAllIndexes(types, ["timespan"])
+    colTypesIndexs.percentage = getAllIndexes(types, ["percentage"])
+    return colTypesIndexs;
+
+}
+const convertTypeToAxisId = (typeName) => {
+    switch (typeName) {
+        case 'int32':
+        case 'int64':
+        case 'decimal':
+            return 'numberAxis'
+        case 'timespan':
+            return 'timeSpanAxis'
+        case 'perentage':
+            return 'percentageAxis'
+        default: return 'numberAxis'
+
+    }
+}
+const buildDataSets = (data, axisesDef) => {
     const indexs = data.dataSetsColumns ? data.dataSetsColumns : [...Array(data.columns.length).keys()].map(i => i + 1);
     return indexs.map(index => {
         return {
             label: data.columns[index],
             backgroundColor: window.COLORS[index % 43],
             borderColor: window.COLORS[index % 43],
-            data: data.rows.map(row => row[1] % (index + 3) * 213),
-            fill: false
+            data: data.rows.map(row => row[index]),
+            fill: false,
+            yAxisID: convertTypeToAxisId(data.types[index])
         }
     })
 
@@ -48,8 +81,45 @@ const convertToTypeLabel = (data, type) => {
             return data
     }
 }
+const axisesDef = (numbers, percentages, timespans) => {
+    const axises = []
+    if (!!numbers)
+        axises.push({
+            id: 'numberAxis',
+            type: 'linear',
+            position: 'left',
+        })
+    if (!!percentages)
+        axises.push({
+            id: 'percentageAxis',
+            type: 'linear',
+            position: 'right',
+            ticks: {
+                // Include a dollar sign in the ticks
+                callback: function (value, index, values) {
+                    return (Number(value) / 100).toFixed(2).toString() + "%";
+                }
+            }
+        })
+    if (!!timespans)
+        axises.push({
+            id: 'timeSpanAxis',
+            type: 'linear',
+            position: 'right',
+            ticks: {
+                // Include a dollar sign in the ticks
+                callback: function (value, index, values) {
+                    return value.toString().toHHMMSS();
+                }
+            }
+        })
+    console.log(axises)
+    return axises
+}
 const buildLineOrBarChart = (graphData, chartType) => {
+    const axisesTypesIndexes = getAxisesTypesIndexs(graphData.types)
     const dataSets = buildDataSets(graphData)
+
     const config = {
         type: chartType,
         data: {
@@ -87,7 +157,7 @@ const buildLineOrBarChart = (graphData, chartType) => {
             },
             hover: {
                 mode: 'nearest',
-                intersect: true
+
             },
             scales: {
                 xAxes: [{
@@ -97,13 +167,9 @@ const buildLineOrBarChart = (graphData, chartType) => {
                         labelString: graphData.columns[0]
                     }
                 }],
-                yAxes: [{
-                    display: true,
-                    scaleLabel: {
-                        display: true,
-                        labelString: ''
-                    }
-                }]
+                yAxes: axisesDef(axisesTypesIndexes.numbers?.length,
+                    axisesTypesIndexes.percentage?.length,
+                    axisesTypesIndexes.timespans?.length)
             }
         }
     };

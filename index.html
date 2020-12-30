@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
 <body class="w3-theme-l4">
-   
+
     <div style="min-width:400px">
         <div class="w3-bar w3-large w3-theme-d4">
             <a href="#" class="w3-bar-item w3-button"><i class="fa fa-bars"></i></a>
@@ -23,9 +23,18 @@
                 <div class=""></div>
             </div>
         </div>
-        
+        <div class="w3-dropdown-click">
+            <button onclick="OpenMenu()" class="w3-button w3-white">שינוי סוג גרף</button>
+            <div id="Demo" class="w3-dropdown-content w3-bar-block w3-border">
+                <a onclick="switchBarOrLineType('line',this)" class="w3-bar-item w3-button">קו</a>
+                <a onclick="switchBarOrLineType('bar',this)" class="w3-bar-item w3-button">עמודות</a>
+            </div>
+        </div>
+        <a onclick="ExportGraphToImage()" class="w3-button w3-white">יצוא לתמונה</a>
         <canvas id="canvas" style="display: block; width: 80%; height: 80%;" height="500"
             class="chartjs-render-monitor"></canvas>
+
+
     </div>
 </body>
 

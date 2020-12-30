@@ -14,6 +14,8 @@ const buildValidJsonObject = (data) => {
                 case 'decimal':
                 case 'int64':
                     return Number(cell)
+                case 'percentage':
+                    return Number(cell)*100
                 case 'datetime':
                     return new Date(Number(cell) * 1000)
                 case 'timespan':
@@ -41,9 +43,7 @@ const convertTableToJson = () => {
 
 $.getJSON("https://raw.githack.com/alaaib/Temp/master/data.json", function (json) {
     const data = buildValidJsonObject(json)
-    data.dataSetsColumns = [1, 2]
-    json.dataSetsColumns = [1, 2]
     json.reportName = 'דוח יומי'
-    buildChart(json);
+    buildLineOrBarChart(json, 'line');
 
 });
